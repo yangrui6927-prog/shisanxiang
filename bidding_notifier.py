@@ -354,13 +354,13 @@ class BiddingNotifier:
             return []
     
     def load_pushed(self):
-        """加载已推送记录"""
+        """加载已推送记录，返回列表（保持顺序）"""
         try:
             with open(self.pushed_file, 'r', encoding='utf-8') as f:
-                return set(json.load(f))
+                return json.load(f)  # 返回列表，保持顺序
         except:
-            return set()
-    
+            return []
+
     def save_pushed(self, urls):
         """保存已推送记录"""
         with open(self.pushed_file, 'w', encoding='utf-8') as f:
@@ -490,8 +490,8 @@ class BiddingNotifier:
         
         # 逐组推送
         print(f"\n开始推送，共 {len(webhook_groups)} 个目标群...")
-        all_pushed_urls = set()
-        
+        all_pushed_urls = []
+
         for webhook, bids in webhook_groups.items():
             # 去重（一个招标可能在同一个webhook中出现多次）
             unique_bids = []
@@ -501,22 +501,31 @@ class BiddingNotifier:
                 if title not in seen_titles:
                     seen_titles.add(title)
                     unique_bids.append(bid)
-            
+
             print(f"\n推送到群 ({webhook[-20:]}):")
             for bid in unique_bids:
                 print(f"  - {bid.get('title', '')[:40]}...")
-            
+
             message = self.format_message(unique_bids)
             success = self.feishu.send_webhook(webhook, message)
             print(f"推送结果: {'成功' if success else '失败'}")
-            
+
             if success:
                 for bid in unique_bids:
                     url = bid.get("url") or bid.get("title", "")
-                    all_pushed_urls.add(url)
-        
-        # 保存已推送记录
-        pushed.update(all_pushed_urls)
+                    if url not in all_pushed_urls:
+                        all_pushed_urls.append(url)
+
+        # 保存已推送记录：先移除已存在的（保持最新在末尾），再添加新的，最后截取100条
+        for url in all_pushed_urls:
+            if url in pushed:
+                pushed.remove(url)  # 移除旧的
+            pushed.append(url)      # 添加到末尾（最新）
+
+        # 只保留最新的100条
+        if len(pushed) > 100:
+            pushed = pushed[-100:]
+
         self.save_pushed(pushed)
         
         print(f"\n完成! 本次推送 {len(all_pushed_urls)} 条新记录")
