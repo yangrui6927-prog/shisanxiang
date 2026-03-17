@@ -59,6 +59,8 @@ class BiddingScraper:
         # 采购服务页面类型
         "OPINION_SOLICITATION": "采购意见征求公告",
         "RECRUITMENT": "招募甄选合作公告",
+        "VENDOR_CHECK_START": "信息核查公告",
+        "SELECT_RESULT": "招募甄选合作结果公告",
     }
     
     def __init__(self):
