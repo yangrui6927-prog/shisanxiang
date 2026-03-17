@@ -38,8 +38,8 @@ class BiddingScraper:
     """招标信息抓取器"""
     
     URLS = {
-        "招标采购公告": "https://b2b.10086.cn/#/biddingProcurementBulletin",
-        "中标结果公示": "https://b2b.10086.cn/#/biddingResultBulletin",
+        "招标采购公告": "https://b2b.10086.cn/#/biddingProcurementBulletin0",
+        "采购服务": "https://b2b.10086.cn/#/procurementServices",
     }
     
     # 公告类型映射
