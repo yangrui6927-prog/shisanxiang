@@ -56,6 +56,9 @@ class BiddingScraper:
         "TERMINATION": "终止公告",
         "SUSPENSION": "暂停公告",
         "CLARIFICATION": "澄清公告",
+        # 采购服务页面类型
+        "OPINION_SOLICITATION": "采购意见征求公告",
+        "RECRUITMENT": "招募甄选合作公告",
     }
     
     def __init__(self):
