@@ -16,8 +16,24 @@ jobs:
     - run: |
         pip install -r requirements.txt
         playwright install chromium
-    - run: python bidding_notifier.py
+
+    - name: 下载历史推送记录
+      uses: actions/download-artifact@v4
+      with:
+        name: pushed-bids-history
+        path: .
+      continue-on-error: true
+
+    - name: 运行招标监控
+      run: python bidding_notifier.py
       env:
         FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
         FETCH_HOURS: 25
         LOCAL_CSV_FILE: 招标订阅表.csv
+
+    - name: 保存推送记录
+      uses: actions/upload-artifact@v4
+      with:
+        name: pushed-bids-history
+        path: pushed_bids.json
+        retention-days: 30
