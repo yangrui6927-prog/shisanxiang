@@ -1,0 +1,45 @@
+name: 招标信息监控
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # 每小时UTC时间运行（北京时间每小时的第8分钟）
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+    
+    - name: 设置Python环境
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+    
+    - name: 安装依赖
+      run: |
+        pip install -r requirements.txt
+        playwright install chromium
+    
+    - name: 下载历史推送记录
+      uses: actions/download-artifact@v4
+      with:
+        name: pushed-bids-history
+        path: .
+      continue-on-error: true
+    
+    - name: 运行招标监控
+      env:
+        FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
+        FETCH_HOURS: 25
+        LOCAL_CSV_FILE: 招标订阅表.csv
+      run: python bidding_notifier.py
+    
+    - name: 保存推送记录
+      uses: actions/upload-artifact@v4
+      with:
+        name: pushed-bids-history
+        path: pushed_bids.json
+        retention-days: 30
