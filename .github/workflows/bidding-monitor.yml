@@ -8,8 +8,6 @@ on:
 jobs:
   monitor:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write  # 允许写入仓库
 
     steps:
     - uses: actions/checkout@v4
@@ -28,19 +26,3 @@ jobs:
         FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
         FETCH_HOURS: 25
         LOCAL_CSV_FILE: 招标订阅表.csv
-
-    - name: 提交推送记录到Git
-      run: |
-        git config user.name "GitHub Actions"
-        git config user.email "actions@github.com"
-        if [ -f pushed_bids.json ]; then
-          git add pushed_bids.json
-          if git diff --cached --quiet; then
-            echo "推送记录无变化"
-          else
-            git commit -m "更新推送记录 $(date '+%Y-%m-%d %H:%M:%S')"
-            git push
-          fi
-        else
-          echo "pushed_bids.json 不存在，跳过提交"
-        fi

@@ -15,6 +15,9 @@ from dateutil import parser as date_parser
 from collections import defaultdict
 from playwright.sync_api import sync_playwright
 
+# 全局变量存储已推送记录（最多100条）
+_global_pushed_bids = []
+
 
 class FeishuAPI:
     """飞书Webhook推送"""
@@ -317,8 +320,7 @@ class BiddingNotifier:
         # 从环境变量读取配置
         self.fetch_hours = int(os.getenv("FETCH_HOURS", "25"))
         self.csv_file = os.getenv("LOCAL_CSV_FILE", "招标订阅表.csv")
-        self.pushed_file = "pushed_bids.json"
-        
+
         self.scraper = BiddingScraper()
         self.feishu = FeishuAPI()
         self.keyword_groups = []  # 从CSV加载的分组配置
@@ -354,17 +356,14 @@ class BiddingNotifier:
             return []
     
     def load_pushed(self):
-        """加载已推送记录，返回列表（保持顺序）"""
-        try:
-            with open(self.pushed_file, 'r', encoding='utf-8') as f:
-                return json.load(f)  # 返回列表，保持顺序
-        except:
-            return []
+        """加载已推送记录，从全局变量读取"""
+        global _global_pushed_bids
+        return _global_pushed_bids.copy()
 
     def save_pushed(self, urls):
-        """保存已推送记录"""
-        with open(self.pushed_file, 'w', encoding='utf-8') as f:
-            json.dump(list(urls), f, ensure_ascii=False)
+        """保存已推送记录到全局变量，最多100条"""
+        global _global_pushed_bids
+        _global_pushed_bids = list(urls)[-100:]  # 只保留最新的100条
     
     def match_keyword_groups(self, bid):
         """匹配关键字分组，返回匹配的所有组索引"""
