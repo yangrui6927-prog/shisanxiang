@@ -16,7 +16,7 @@ from collections import defaultdict
 from playwright.sync_api import sync_playwright
 
 # 缓存文件路径（从环境变量读取，默认当前目录）
-CACHE_FILE = os.getenv("PUSHED_BIDS_CACHE", "pushed_bids.json")
+CACHE_FILE = os.path.expanduser(os.getenv("PUSHED_BIDS_CACHE", "pushed_bids.json"))
 
 
 class FeishuAPI:
