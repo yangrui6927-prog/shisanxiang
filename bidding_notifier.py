@@ -366,7 +366,9 @@ class BiddingNotifier:
     def save_pushed(self, urls):
         """保存已推送记录到缓存文件，最多100条"""
         import os as os_module
-        os_module.makedirs(os_module.path.dirname(CACHE_FILE), exist_ok=True)
+        cache_dir = os_module.path.dirname(CACHE_FILE)
+        if cache_dir:  # 如果路径包含目录部分
+            os_module.makedirs(cache_dir, exist_ok=True)
         with open(CACHE_FILE, 'w', encoding='utf-8') as f:
             json.dump(list(urls)[-100:], f, ensure_ascii=False)
     
