@@ -20,12 +20,6 @@ jobs:
         restore-keys: |
           pushed-bids-
 
-    - name: 清空推送记录
-      run: |
-        mkdir -p ~/.cache/bidding-monitor
-        echo "[]" > ~/.cache/bidding-monitor/pushed_bids.json
-        echo "已清空推送记录"
-
     - uses: actions/setup-python@v5
       with:
         python-version: '3.10'
