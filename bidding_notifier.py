@@ -451,13 +451,13 @@ class BiddingNotifier:
         # 筛选: 未推送 + 时间范围内 + 匹配关键字分组
         matched_bids = []
         for bid in all_bids:
-            # 使用URL作为唯一标识（如果还没有URL，先用标题）
-            bid_id = bid.get("url") or bid.get("title", "")
+            # 使用标题作为唯一标识（更稳定，URL获取可能失败）
+            bid_id = bid.get("title", "")
             if bid_id in pushed:
                 continue
             if not self.is_recent(bid):
                 continue
-            
+
             # 匹配关键字分组
             matched_groups = self.match_keyword_groups(bid)
             if matched_groups:
@@ -518,9 +518,10 @@ class BiddingNotifier:
 
             if success:
                 for bid in unique_bids:
-                    url = bid.get("url") or bid.get("title", "")
-                    if url not in all_pushed_urls:
-                        all_pushed_urls.append(url)
+                    # 使用标题作为标识符（更稳定）
+                    bid_id = bid.get("title", "")
+                    if bid_id and bid_id not in all_pushed_urls:
+                        all_pushed_urls.append(bid_id)
 
         # 保存已推送记录：先移除已存在的（保持最新在末尾），再添加新的，最后截取100条
         for url in all_pushed_urls:
