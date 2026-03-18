@@ -2,7 +2,7 @@ name: 招标信息监控
 
 on:
   schedule:
-    - cron: '5 * * * *'  # 每小时UTC 5分运行（北京时间13分）
+    - cron: '0 0-15 * * *'  # 北京时间8点到23点每小时执行（UTC 0点到15点）
   workflow_dispatch:  # 允许手动触发
 
 jobs:
