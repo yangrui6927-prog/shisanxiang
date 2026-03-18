@@ -15,8 +15,8 @@ from dateutil import parser as date_parser
 from collections import defaultdict
 from playwright.sync_api import sync_playwright
 
-# 全局变量存储已推送记录（最多100条）
-_global_pushed_bids = []
+# 缓存文件路径（从环境变量读取，默认当前目录）
+CACHE_FILE = os.getenv("PUSHED_BIDS_CACHE", "pushed_bids.json")
 
 
 class FeishuAPI:
@@ -356,14 +356,19 @@ class BiddingNotifier:
             return []
     
     def load_pushed(self):
-        """加载已推送记录，从全局变量读取"""
-        global _global_pushed_bids
-        return _global_pushed_bids.copy()
+        """加载已推送记录，从缓存文件读取"""
+        try:
+            with open(CACHE_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except:
+            return []
 
     def save_pushed(self, urls):
-        """保存已推送记录到全局变量，最多100条"""
-        global _global_pushed_bids
-        _global_pushed_bids = list(urls)[-100:]  # 只保留最新的100条
+        """保存已推送记录到缓存文件，最多100条"""
+        import os as os_module
+        os_module.makedirs(os_module.path.dirname(CACHE_FILE), exist_ok=True)
+        with open(CACHE_FILE, 'w', encoding='utf-8') as f:
+            json.dump(list(urls)[-100:], f, ensure_ascii=False)
     
     def match_keyword_groups(self, bid):
         """匹配关键字分组，返回匹配的所有组索引"""
