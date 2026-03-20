@@ -47,22 +47,14 @@ class BiddingScraper:
     
     # 公告类型映射
     BID_TYPE_MAP = {
-        "CANDIDATE_PUBLICITY": "中标候选人公示",
-        "WIN_BID": "中标公告",
-        "WIN_BID_PUBLICITY": "中标结果公示",
-        "BIDDING": "招标公告",
-        "BIDDING_PROCUREMENT": "招标采购公告",
-        "PROCUREMENT": "直接采购公告",
-        "SINGLE_SOURCE": "单一来源公示",
-        "PREQUALIFICATION": "资格预审公告",
-        "CORRECTION": "更正公告",
-        "TERMINATION": "终止公告",
-        "SUSPENSION": "暂停公告",
-        "CLARIFICATION": "澄清公告",
-        # 采购服务页面类型
-        "OPINION_SOLICITATION": "采购意见征求公告",
-        "RECRUITMENT": "招募甄选合作公告",
+        "CANDIDATE_PUBLICITY": "候选人公示",
+        "PROCUREMENT": "采购公告",
+        "SELECTION_RESULTS": "中标结果公示",
+        "ONE_SOURCE_PROCUREMENT": "直接采购公告",
         "VENDOR_CHECK_START": "信息核查公告",
+        "PURCHASE_OPINION": "采购意见征求公告",
+        "TEST": "测试公告",
+        "SELECT_COOPERATE": "招募甄选合作公告",
         "SELECT_RESULT": "招募甄选合作结果公告",
     }
     
