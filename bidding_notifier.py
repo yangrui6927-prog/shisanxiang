@@ -123,31 +123,52 @@ class BiddingScraper:
             cells = row.query_selector_all("td")
             if len(cells) < 3:
                 return ""
-            
+
             title_cell = cells[2]
-            
+
             # 尝试多种可能的选择器找可点击元素
             clickable = None
             for selector in ["a", "span", "div", "button"]:
                 clickable = title_cell.query_selector(selector)
                 if clickable:
                     break
-            
+
             if not clickable:
                 clickable = title_cell
 
             clickable.scroll_into_view_if_needed(timeout=5000)
             self.page.wait_for_timeout(500)
 
-            # 等待新窗口弹出
-            with self.page.expect_popup(timeout=15000) as popup_info:
-                clickable.click(timeout=10000)
+            list_url = self.page.url
+            detail_url = ""
 
-            popup = popup_info.value
-            popup.wait_for_load_state("networkidle", timeout=15000)
-            detail_url = popup.url
-            popup.close()
-            self.page.wait_for_timeout(500)
+            # 先尝试 popup 方式
+            try:
+                with self.page.expect_popup(timeout=10000) as popup_info:
+                    clickable.click(timeout=10000)
+                popup = popup_info.value
+                popup.wait_for_load_state("networkidle", timeout=15000)
+                detail_url = popup.url
+                popup.close()
+            except Exception:
+                # popup 失败，可能是当前页跳转或被遮挡，尝试强制点击并检测 URL 变化
+                try:
+                    # 尝试强制点击（绕过遮挡）
+                    clickable.click(force=True, timeout=5000)
+                except Exception:
+                    pass  # 忽略点击错误，继续检测 URL
+
+                # 等待页面加载并检测 URL 是否变化
+                try:
+                    self.page.wait_for_load_state("networkidle", timeout=10000)
+                except Exception:
+                    pass
+                detail_url = self.page.url
+
+                # 如果 URL 变了且包含 noticeDetail，说明跳转成功，需要返回列表页
+                if detail_url != list_url and "noticeDetail" in detail_url:
+                    self.page.goto(list_url, wait_until="networkidle", timeout=60000)
+                    self.page.wait_for_timeout(3000)  # 等待表格重新加载
 
             if "noticeDetail" in detail_url:
                 return detail_url
