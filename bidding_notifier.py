@@ -80,6 +80,17 @@ class BiddingScraper:
             row_count = len(self.page.query_selector_all("table tbody tr"))
             print(f"  找到 {row_count} 行数据")
 
+            # 调试：检查页面结构
+            if row_count == 0:
+                html = self.page.content()
+                if "table" in html:
+                    print("  页面包含 table 标签")
+                else:
+                    print("  页面没有 table 标签")
+                # 检查是否有其他列表结构
+                div_rows = len(self.page.query_selector_all("div.el-table__row"))
+                print(f"  el-table 行数: {div_rows}")
+
             bids = []
             for i in range(row_count):
                 # 每次重新查询，避免弹窗关闭后DOM刷新导致stale引用
