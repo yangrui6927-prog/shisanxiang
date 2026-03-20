@@ -425,17 +425,23 @@ class BiddingNotifier:
         
         # 抓取所有招标
         all_bids = []
+        seen_titles = set()
         for category, url in BiddingScraper.URLS.items():
             bids = self.scraper.fetch_page(url, category)
-            all_bids.extend(bids)
+            for bid in bids:
+                title = bid.get("title", "")
+                if title and title not in seen_titles:
+                    seen_titles.add(title)
+                    all_bids.append(bid)
             print(f"  抓取到 {len(bids)} 条\n")
-        
+
+        pushed_set = set(pushed)
         # 筛选: 未推送 + 时间范围内 + 匹配关键字分组
         matched_bids = []
         for bid in all_bids:
             # 使用标题作为唯一标识（更稳定，URL获取可能失败）
             bid_id = bid.get("title", "")
-            if bid_id in pushed:
+            if bid_id in pushed_set:
                 continue
             if not self.is_recent(bid):
                 continue
