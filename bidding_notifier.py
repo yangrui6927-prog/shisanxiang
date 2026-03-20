@@ -117,25 +117,29 @@ class BiddingScraper:
             
             if not clickable:
                 clickable = title_cell
-            
+
+            clickable.scroll_into_view_if_needed(timeout=5000)
+            self.page.wait_for_timeout(500)
+
             # 等待新窗口弹出
             with self.page.expect_popup(timeout=15000) as popup_info:
-                clickable.click()
-            
+                clickable.click(timeout=10000)
+
             popup = popup_info.value
             popup.wait_for_load_state("networkidle", timeout=15000)
             detail_url = popup.url
             popup.close()
-            
+            self.page.wait_for_timeout(500)
+
             if "noticeDetail" in detail_url:
                 return detail_url
             else:
                 return ""
-                
+
         except Exception as e:
             print(f"    ✗ 获取失败: {e}")
             return ""
-    
+
     def get_detail_url_for_bid(self, bid, row_element=None):
         """点击标题，在新窗口获取详情URL（备用方法）"""
         try:
@@ -172,25 +176,28 @@ class BiddingScraper:
                     break
             
             if not clickable:
-                # 如果没有找到特定元素，尝试直接点击单元格
                 clickable = title_cell
-            
+
+            clickable.scroll_into_view_if_needed(timeout=5000)
+            self.page.wait_for_timeout(500)
+
             # 等待新窗口弹出
             with self.page.expect_popup(timeout=15000) as popup_info:
-                clickable.click()
-            
+                clickable.click(timeout=10000)
+
             popup = popup_info.value
             popup.wait_for_load_state("networkidle", timeout=15000)
             detail_url = popup.url
             popup.close()
-            
+            self.page.wait_for_timeout(500)
+
             if "noticeDetail" in detail_url:
                 print(f"    ✓ 成功: {detail_url[:60]}...")
                 return detail_url
             else:
                 print(f"    ✗ URL无效: {detail_url[:60]}")
                 return ""
-                
+
         except Exception as e:
             print(f"    ✗ 失败: {e}")
             return ""
