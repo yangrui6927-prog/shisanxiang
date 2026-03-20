@@ -76,22 +76,29 @@ class BiddingScraper:
             print(f"正在抓取: {category}")
             self.page.goto(url, wait_until="networkidle", timeout=90000)
             self.page.wait_for_timeout(10000)  # 等待表格加载
-            
-            rows = self.page.query_selector_all("table tbody tr")
-            print(f"  找到 {len(rows)} 行数据")
-            
+
+            row_count = len(self.page.query_selector_all("table tbody tr"))
+            print(f"  找到 {row_count} 行数据")
+
             bids = []
-            for i, row in enumerate(rows):
+            for i in range(row_count):
+                # 每次重新查询，避免弹窗关闭后DOM刷新导致stale引用
+                rows = self.page.query_selector_all("table tbody tr")
+                if i >= len(rows):
+                    break
+                row = rows[i]
                 bid = self._parse_row(row, category)
                 if bid:
                     # 立即获取详情URL
-                    print(f"  [{i+1}/{len(rows)}] 获取详情: {bid['title'][:30]}...")
-                    detail_url = self._get_detail_url_from_row(row)
+                    print(f"  [{i+1}/{row_count}] 获取详情: {bid['title'][:30]}...")
+                    rows = self.page.query_selector_all("table tbody tr")
+                    row = rows[i] if i < len(rows) else None
+                    detail_url = self._get_detail_url_from_row(row) if row else ""
                     bid["url"] = detail_url
                     if detail_url:
                         bid["type"] = self._parse_bid_type_from_url(detail_url)
                     bids.append(bid)
-                    
+
             return bids
         except Exception as e:
             print(f"  抓取失败: {e}")
