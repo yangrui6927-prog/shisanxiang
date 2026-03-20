@@ -195,16 +195,6 @@ class BiddingScraper:
             print(f"    ✗ 失败: {e}")
             return ""
 
-    def _parse_bid_type_from_url(self, url):
-        """从URL解析公告类型"""
-        if "publishOneType=" in url:
-            try:
-                publish_type = url.split("publishOneType=")[1]
-                return self.BID_TYPE_MAP.get(publish_type, "招标公示")
-            except:
-                pass
-        return "招标公示"
-
     def _parse_row(self, row, category):
         """解析单行数据"""
         try:
