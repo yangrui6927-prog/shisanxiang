@@ -199,7 +199,7 @@ class BiddingScraper:
         """从URL解析公告类型"""
         if "publishOneType=" in url:
             try:
-                publish_type = url.split("publishOneType=")[1].split("&")[0].strip()
+                publish_type = url.split("publishOneType=")[1].split()[0]
                 return self.BID_TYPE_MAP.get(publish_type, "招标公示")
             except:
                 pass
@@ -291,7 +291,7 @@ class BiddingScraper:
         """从URL解析公告类型"""
         if "publishOneType=" in url:
             try:
-                publish_type = url.split("publishOneType=")[1].split("&")[0].strip()
+                publish_type = url.split("publishOneType=")[1].split()[0]
                 return self.BID_TYPE_MAP.get(publish_type, "招标公示")
             except:
                 pass
