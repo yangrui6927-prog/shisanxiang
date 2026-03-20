@@ -142,27 +142,31 @@ class BiddingScraper:
             list_url = self.page.url
             detail_url = ""
 
-            # 先尝试 popup 方式
+            # 先尝试关闭可能存在的模态框
             try:
-                with self.page.expect_popup(timeout=10000) as popup_info:
-                    clickable.click(timeout=10000)
+                # 尝试按 ESC 关闭模态框
+                self.page.keyboard.press("Escape")
+                self.page.wait_for_timeout(200)
+                # 尝试点击遮罩层关闭
+                overlay = self.page.query_selector(".cmcc-modal-wrap, .v-transfer-dom, .el-dialog__wrapper")
+                if overlay:
+                    overlay.evaluate("el => el.style.display = 'none'")
+                    self.page.wait_for_timeout(200)
+            except Exception:
+                pass
+
+            # 尝试 popup 方式
+            try:
+                with self.page.expect_popup(timeout=8000) as popup_info:
+                    # 使用 JavaScript 点击，完全绕过遮挡
+                    clickable.evaluate("el => el.click()")
                 popup = popup_info.value
-                popup.wait_for_load_state("networkidle", timeout=15000)
+                popup.wait_for_load_state("networkidle", timeout=10000)
                 detail_url = popup.url
                 popup.close()
             except Exception:
-                # popup 失败，可能是当前页跳转或被遮挡，尝试强制点击并检测 URL 变化
-                try:
-                    # 尝试强制点击（绕过遮挡）
-                    clickable.click(force=True, timeout=5000)
-                except Exception:
-                    pass  # 忽略点击错误，继续检测 URL
-
-                # 等待页面加载并检测 URL 是否变化
-                try:
-                    self.page.wait_for_load_state("networkidle", timeout=10000)
-                except Exception:
-                    pass
+                # popup 失败，可能是当前页跳转，检测 URL 变化
+                self.page.wait_for_timeout(2000)  # 等待跳转
                 detail_url = self.page.url
 
                 # 如果 URL 变了且包含 noticeDetail，说明跳转成功，需要返回列表页
@@ -220,14 +224,34 @@ class BiddingScraper:
             clickable.scroll_into_view_if_needed(timeout=5000)
             self.page.wait_for_timeout(500)
 
-            # 等待新窗口弹出
-            with self.page.expect_popup(timeout=15000) as popup_info:
-                clickable.click(timeout=10000)
+            list_url = self.page.url
+            detail_url = ""
 
-            popup = popup_info.value
-            popup.wait_for_load_state("networkidle", timeout=15000)
-            detail_url = popup.url
-            popup.close()
+            # 先尝试关闭可能存在的模态框
+            try:
+                self.page.keyboard.press("Escape")
+                self.page.wait_for_timeout(200)
+                overlay = self.page.query_selector(".cmcc-modal-wrap, .v-transfer-dom, .el-dialog__wrapper")
+                if overlay:
+                    overlay.evaluate("el => el.style.display = 'none'")
+                    self.page.wait_for_timeout(200)
+            except Exception:
+                pass
+
+            # 尝试 popup 方式
+            try:
+                with self.page.expect_popup(timeout=8000) as popup_info:
+                    clickable.evaluate("el => el.click()")
+                popup = popup_info.value
+                popup.wait_for_load_state("networkidle", timeout=10000)
+                detail_url = popup.url
+                popup.close()
+            except Exception:
+                self.page.wait_for_timeout(2000)
+                detail_url = self.page.url
+                if detail_url != list_url and "noticeDetail" in detail_url:
+                    self.page.goto(list_url, wait_until="networkidle", timeout=60000)
+                    self.page.wait_for_timeout(3000)
             self.page.wait_for_timeout(500)
 
             if "noticeDetail" in detail_url:
@@ -302,12 +326,35 @@ class BiddingScraper:
             if not clickable:
                 # 如果没有找到特定元素，尝试直接点击单元格
                 clickable = title_cell
-            
-            # 等待新窗口弹出
-            with self.page.expect_popup(timeout=15000) as popup_info:
-                clickable.click()
-            
-            popup = popup_info.value
+
+            list_url = self.page.url
+            detail_url = ""
+
+            # 先尝试关闭可能存在的模态框
+            try:
+                self.page.keyboard.press("Escape")
+                self.page.wait_for_timeout(200)
+                overlay = self.page.query_selector(".cmcc-modal-wrap, .v-transfer-dom, .el-dialog__wrapper")
+                if overlay:
+                    overlay.evaluate("el => el.style.display = 'none'")
+                    self.page.wait_for_timeout(200)
+            except Exception:
+                pass
+
+            # 尝试 popup 方式
+            try:
+                with self.page.expect_popup(timeout=8000) as popup_info:
+                    clickable.evaluate("el => el.click()")
+                popup = popup_info.value
+                popup.wait_for_load_state("networkidle", timeout=10000)
+                detail_url = popup.url
+                popup.close()
+            except Exception:
+                self.page.wait_for_timeout(2000)
+                detail_url = self.page.url
+                if detail_url != list_url and "noticeDetail" in detail_url:
+                    self.page.goto(list_url, wait_until="networkidle", timeout=60000)
+                    self.page.wait_for_timeout(3000)
             popup.wait_for_load_state("networkidle", timeout=15000)
             detail_url = popup.url
             popup.close()
